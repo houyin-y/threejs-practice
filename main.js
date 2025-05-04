@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 
 // === Constants ===
@@ -32,6 +33,11 @@ function onWindowResize() {
     camera.aspect = innerWidth / innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(innerWidth, innerHeight);
+}
+
+// === Controls === 
+function setupControls() {
+    new OrbitControls(camera, renderer.domElement);
 }
 
 // === Objects ===
@@ -73,6 +79,7 @@ function animate() {
 
 function main() {
     initScene();
+    setupControls();
     createObjects();
     animate();
 }
