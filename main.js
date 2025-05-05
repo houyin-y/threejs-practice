@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 
 import { GUI } from 'dat.gui';
 
@@ -12,7 +13,7 @@ const COLORS = {
 };
 
 // === Globals ===
-let scene, camera, gui, renderer, cube1, cube2, cube3;
+let scene, camera, gui, renderer, controls;
 
 // === Initialization ===
 function initScene() {
@@ -98,9 +99,9 @@ function createGround() {
 }
 
 function createObjects() {
-    cube1 = createCube(0, COLORS.red);
-    cube2 = createCube(-2, COLORS.green);
-    cube3 = createCube(2, COLORS.blue);
+    createCube(0, COLORS.red);
+    createCube(-2, COLORS.green);
+    createCube(2, COLORS.blue);
     /* createSphere();
     createDonut(); */
     createGround();
@@ -232,25 +233,44 @@ function loadModel() {
     animate();
 }
 
+// === Pointer Lock Controls ===
+function setupPointerLockCtrl() {
+    controls = new PointerLockControls(camera, document.body);
+
+    const blocker = document.getElementById('blocker');
+    const instructions = document.getElementById('instructions');
+
+    instructions.addEventListener('click', function() {
+        controls.lock();
+    })
+
+    controls.addEventListener('lock', function() {
+        blocker.style.display = 'none';
+        instructions.style.display = 'none';
+    })
+
+    controls.addEventListener('unlock', function() {
+        blocker.style.display = 'block';
+        instructions.style.display = '';
+    })
+
+    scene.add(controls.object);
+}
+
 // === Animation Loop ===
 function animate() {
     renderer.setAnimationLoop(() => {
-        /* cube1.rotation.x += 0.005;
-        cube1.rotation.y += 0.005;
-        cube2.rotation.x -= 0.005;
-        cube2.rotation.y -= 0.005;
-        cube3.rotation.x += 0.005;
-        cube3.rotation.y -= 0.0005; */
         renderer.render(scene, camera);
     });
 }
 
 function main() {
     initScene();
-    setupControls();
+    //setupControls();
+    setupPointerLockCtrl();
     // createObjects();
     loadModel();
     // setupLights();
     animate();
 }
-main()
+main();
