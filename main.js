@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 import { GUI } from 'dat.gui';
 
@@ -207,15 +208,39 @@ function setupLights() {
     setupPointLight();
 }
 
+// === GLTF Model Loader ===
+function loadModel() {
+    let loadedModel;
+    const loader = new GLTFLoader();
+    loader.load('/models/shiba/scene.gltf', (gltf) => {
+        loadedModel = gltf;
+
+        scene.add(gltf.scene);
+    }, undefined, (error) => {
+        console.error(error);
+    });
+
+    const animate = () => {
+        if (loadedModel) {
+            loadedModel.scene.scale.set(10, 10, 10);
+            loadedModel.scene.rotation.x += 0.01;
+            loadedModel.scene.rotation.y += 0.01;
+            loadedModel.scene.rotation.z += 0.01;
+        }
+        requestAnimationFrame(animate);
+    }
+    animate();
+}
+
 // === Animation Loop ===
 function animate() {
     renderer.setAnimationLoop(() => {
-        cube1.rotation.x += 0.005;
+        /* cube1.rotation.x += 0.005;
         cube1.rotation.y += 0.005;
         cube2.rotation.x -= 0.005;
         cube2.rotation.y -= 0.005;
         cube3.rotation.x += 0.005;
-        cube3.rotation.y -= 0.0005;
+        cube3.rotation.y -= 0.0005; */
         renderer.render(scene, camera);
     });
 }
@@ -223,8 +248,9 @@ function animate() {
 function main() {
     initScene();
     setupControls();
-    createObjects();
-    setupLights();
+    // createObjects();
+    loadModel();
+    // setupLights();
     animate();
 }
 main()
