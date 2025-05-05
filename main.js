@@ -11,7 +11,7 @@ const COLORS = {
 };
 
 // === Globals ===
-let scene, camera, gui, renderer;
+let scene, camera, gui, renderer, cube1, cube2, cube3;
 
 // === Initialization ===
 function initScene() {
@@ -54,6 +54,8 @@ function createCube(x, color) {
     cube.caseShadow = true;
     scene.add(cube);
 
+    return cube;
+
     /* const folder = gui.addFolder('Cube')
     folder.add(cube.rotation, 'x', 0, Math.PI, Math.PI/8);
     folder.add(cube.rotation, 'y', 0, Math.PI, Math.PI/8);
@@ -95,9 +97,9 @@ function createGround() {
 }
 
 function createObjects() {
-    createCube(0, COLORS.red);
-    createCube(-2, COLORS.green);
-    createCube(2, COLORS.blue);
+    cube1 = createCube(0, COLORS.red);
+    cube2 = createCube(-2, COLORS.green);
+    cube3 = createCube(2, COLORS.blue);
     /* createSphere();
     createDonut(); */
     createGround();
@@ -114,7 +116,6 @@ function setupAmbientLight() {
     folder.add(light, 'visible');
     folder.add(light, 'intensity', 0, 1, 0.2);
     folder.addColor(settings, 'color').onChange(value => light.color.set(value));
-    folder.open();
 }
 
 function setupHemisphereLight() {
@@ -128,7 +129,6 @@ function setupHemisphereLight() {
     folder.add(light, 'visible');
     folder.add(light, 'intensity', 0, 1, 0.2);
     folder.addColor(settings, 'color').onChange(value => light.color.set(value));
-    folder.open();
 }
 
 function setupDirectionalLight() {
@@ -153,7 +153,6 @@ function setupDirectionalLight() {
     folder.add(light, 'intensity', 0, 1, 0.2);
     folder.add(light, 'castShadow');
     folder.addColor(settings, 'color').onChange(value => light.color.set(value));
-    folder.open();
 }
 
 function setupSpotLight() {
@@ -175,7 +174,6 @@ function setupSpotLight() {
     folder.add(light, 'intensity', 0, 4, 0.5);
     folder.add(light, 'angle', Math.PI / 16, Math.PI / 2, Math.PI / 16);
     folder.add(light, 'castShadow');
-    folder.open();
 }
 
 function setupPointLight() {
@@ -199,7 +197,6 @@ function setupPointLight() {
     folder.add(light.position, 'z', -2, 4, 0.5);
     folder.add(light, 'castShadow');
     folder.addColor(settings, 'color').onChange(value => light.color.set(value));
-    folder.open();
 }
 
 function setupLights() {
@@ -213,6 +210,12 @@ function setupLights() {
 // === Animation Loop ===
 function animate() {
     renderer.setAnimationLoop(() => {
+        cube1.rotation.x += 0.005;
+        cube1.rotation.y += 0.005;
+        cube2.rotation.x -= 0.005;
+        cube2.rotation.y -= 0.005;
+        cube3.rotation.x += 0.005;
+        cube3.rotation.y -= 0.0005;
         renderer.render(scene, camera);
     });
 }
