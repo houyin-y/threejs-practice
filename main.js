@@ -9,11 +9,14 @@ import { GUI } from 'dat.gui';
 const COLORS = {
     red: 0xFF0000,
     green: 0x00FF00,
-    blue: 0x0000FF
+    blue: 0x0000FF,
+    grey: 0x808080
 };
 
 // === Globals ===
 let scene, camera, gui, renderer, controls;
+let velocity, direction, moveForward, moveBackward, moveLeft, moveRight;
+let prevTime = performance.now();
 
 // === Initialization ===
 function initScene() {
@@ -34,6 +37,16 @@ function initScene() {
     gui = new GUI();
 
     window.addEventListener('resize', onWindowResize);
+}
+
+function initMovement() {
+    velocity = new THREE.Vector3();
+    direction = new THREE.Vector3();
+
+    moveForward = false;
+    moveBackward = false;
+    moveLeft = false;
+    moveRight = false;
 }
 
 function onWindowResize() {
@@ -203,25 +216,25 @@ function setupPointLight() {
 
 function setupLights() {
     setupHemisphereLight();
-    setupAmbientLight();
+    /* setupAmbientLight();
     setupDirectionalLight();
     setupSpotLight();
-    setupPointLight();
+    setupPointLight(); */
 }
 
 // === GLTF Model Loader ===
 function loadModel() {
-    let loadedModel;
+    // let loadedModel;
     const loader = new GLTFLoader();
-    loader.load('/models/shiba/scene.gltf', (gltf) => {
-        loadedModel = gltf;
+    loader.load('/models/tiny_isometric_room/scene.gltf', (gltf) => {
+        // loadedModel = gltf;
 
         scene.add(gltf.scene);
     }, undefined, (error) => {
         console.error(error);
     });
 
-    const animate = () => {
+    /* const animate = () => {
         if (loadedModel) {
             loadedModel.scene.scale.set(10, 10, 10);
             loadedModel.scene.rotation.x += 0.01;
@@ -230,7 +243,7 @@ function loadModel() {
         }
         requestAnimationFrame(animate);
     }
-    animate();
+    animate(); */
 }
 
 // === Pointer Lock Controls ===
@@ -257,20 +270,95 @@ function setupPointerLockCtrl() {
     scene.add(controls.object);
 }
 
+// === Keyboard Movement ===
+function setupMovement() {
+    const onKeyDown = function(event) {
+        switch(event.code) {
+            case 'ArrowUp':
+            case 'KeyW':
+                moveForward = true;
+                break;
+            case 'ArrowDown':
+            case 'KeyS':
+                moveBackward = true;
+                break;
+            case 'ArrowLeft':
+            case 'KeyA':
+                moveLeft = true;
+                break;
+            case 'ArrowRight':
+            case 'KeyD':
+                moveRight = true;
+                break;
+        }
+    };
+
+    const onKeyUp = function(event) {
+        switch(event.code) {
+            case 'ArrowUp':
+            case 'KeyW':
+                moveForward = false;
+                break;
+            case 'ArrowDown':
+            case 'KeyS':
+                moveBackward = false;
+                break;
+            case 'ArrowLeft':
+            case 'KeyA':
+                moveLeft = false;
+                break;
+            case 'ArrowRight':
+            case 'KeyD':
+                moveRight = false;
+                break;
+        }
+    };
+
+    document.addEventListener('keydown', onKeyDown);
+    document.addEventListener('keyup', onKeyUp);
+}
+
 // === Animation Loop ===
 function animate() {
     renderer.setAnimationLoop(() => {
+        const time = performance.now();
+
+        if (controls.isLocked === true) {
+            // amount of time (seconds) since the last frame
+            // ensures movement is frame rate INDEPENDENT reagardless of fps
+            const delta = (time - prevTime) / 1000;
+
+            // opposing force such as friction/air resistance, slowing down movement over time
+            velocity.x -= velocity.x * 10.0 * delta;
+            velocity.z -= velocity.z * 10.0 * delta;
+
+            direction.z = Number(moveForward) - Number(moveBackward);
+            direction.x = Number(moveRight) - Number(moveLeft);
+            direction.normalize();      // ensures consistent movements in all direction
+
+            if ( moveForward || moveBackward ) velocity.z -= direction.z * 100.0 * delta;
+            if ( moveLeft || moveRight ) velocity.x -= direction.x * 100.0 * delta;
+
+            controls.moveRight( - velocity.x * delta );
+            controls.moveForward( - velocity.z * delta );
+        }
+        prevTime = time;
         renderer.render(scene, camera);
     });
 }
 
 function main() {
     initScene();
+    initMovement();
+    setupMovement();
+
     //setupControls();
     setupPointerLockCtrl();
-    // createObjects();
-    loadModel();
-    // setupLights();
+
+    createObjects();
+    // loadModel();
+    setupLights();
+
     animate();
 }
 main();
